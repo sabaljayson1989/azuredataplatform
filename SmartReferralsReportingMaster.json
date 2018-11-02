@@ -1,0 +1,289 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "Enviornmnet": {
+            "type": "string",
+            "allowedValues":[
+                "dev",
+                "tst",
+                "prd"
+            ],
+            "metadata": {
+                "description" : "SRRA Enviornmnet"
+            }
+        },
+        "AUSEastVnetName": {
+            "type": "string",
+            "metadata": {
+              "description": "Australia East Vnet Name"
+            }
+        },
+        "AUSEastVnetResourceGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "Australia East Vnet Resource Group Name"
+            }
+         },
+        "AUSEastMISubnetName": {
+            "type": "string",
+            "metadata": {
+              "description": "Australia East Managed Instance Subnet Name"
+            }
+        },
+        "AUSSoutheastVnetName": {
+            "type": "string",
+            "metadata": {
+              "description": "Australia Southeast Vnet Name"
+            }
+        },
+        "AUSSoutheastVnetResourceGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "Australia Southeast Vnet Resource Group Name"
+            }
+         },
+        "AUSSoutheastMISubnetName": {
+            "type": "string",
+            "metadata": {
+              "description": "Australia East Managed Instance Subnet Name"
+            }
+        },
+        "AUSEastMIAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Managed Instance Admin Password for East"
+              }
+        },
+        "AUSSoutheastMIAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Managed Instance Admin Password for Southeast"
+              }
+        },
+        "AUSEastSQLDBAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "SQL Database Admin Password for East"
+              }
+        },
+        "AUSSoutheastSQLDBAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "SQL Database Admin Password for Southeast"
+              }
+        },
+        "DataWarehouseAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Azure Data Warehouse Admin Password"
+              }
+        },
+        "DataFactoryComputeSubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Subnet Name for the DF compute nodes"
+            }
+        },
+        "DataFactoryCatalogDatabasePassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Catalog Database Admin Password"
+            }
+        },
+        "AnalysisServicesAdminUPN": {
+            "type": "string",
+            "metadata": {
+                "description": "Admin UPN for Azure Analysis Services (must be : <>@health.qld.gov.au) "
+            }
+        }
+      },
+    "variables": {  
+        "BaseURL": "https://raw.githubusercontent.com/akanugawela/azuredataplatform/master/",
+        "StorageAccountsTemplateURL":"[concat(variables('BaseURL'), 'StorageAccounts.json')]",
+        "ManagedInstancesTemplateURL": "[concat(variables('BaseURL'), 'ManagedInstances.json')]",
+        "SQLDatabaseTemplateURL": "[concat(variables('BaseURL'), 'SQLDatabases.json')]",
+        "DataWarehouseTemplateURL": "[concat(variables('BaseURL'), 'DataWarehouse.json')]",
+        "DataFactoryTemplateURL": "[concat(variables('BaseURL'), 'DataFactory.json')]",
+        "AnalysisServicesTemplateURL": "[concat(variables('BaseURL'), 'AnalysisServices.json')]",
+        "EnvAcronym" : "[if(equals(parameters('Enviornmnet'),'prd'),'qhprod','qhitf')]",
+        "AUSEastVnetID" : "[resourceId(parameters('AUSEastVnetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('AUSEastVnetName'))]",
+        "AUSSoutheastVnetID" : "[resourceId(parameters('AUSSoutheastVnetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('AUSSoutheastVnetName'))]",
+       
+        "VStorageAccounts" : {
+            "AusEastSAName" : {
+                "value":"[concat('staehqsrr',variables('EnvAcronym'),'ae',parameters('Enviornmnet'))]" 
+            },
+            "AusSouthEastSAName" : {
+                "value":"[concat('staehqsrr',variables('EnvAcronym'),'ase',parameters('Enviornmnet'))]" 
+            }
+        },
+        "VManagedInstances" : {
+            "AusEastMIName" : {
+                "value":"[concat('smiehqsrr',variables('EnvAcronym'),'ae',parameters('Enviornmnet'))]"
+            },
+            "AusEastMISubnetID" : {
+                "value": "[concat(variables('AUSEastVnetID'),'/subnets/', parameters('AUSEastMISubnetName'))]"
+            },
+            "AusEastServerAdminPassword": {
+                "value": "[parameters('AUSEastMIAdminPassword')]"
+            },
+            "AusSoutheastMIName" : {
+                "value":"[concat('smiehqsrr',variables('EnvAcronym'),'ase',parameters('Enviornmnet'))]"
+            },
+            "AusSoutheastMISubnetID" : {
+                "value": "[concat(variables('AUSSoutheastVnetID'),'/subnets/', parameters('AUSSoutheastMISubnetName'))]"
+            },
+            "AusSoutheastServerAdminPassword": {
+                "value": "[parameters('AUSSoutheastMIAdminPassword')]"
+            }     
+        },
+        "VSQLDatabase" : {
+           "AusEastSQLServerName" : {
+            "value": "[concat('sqlehqsrr',variables('EnvAcronym'),'ae',parameters('Enviornmnet'))]"
+           },
+           "AusEastSQLDatabaseName" : {
+               "value": "[concat('sdbehqsrr',variables('EnvAcronym'),'ae',parameters('Enviornmnet'))]"
+           },
+           "AusEastServerAdminPassword": {
+               "value": "[parameters('AUSEastSQLDBAdminPassword')]"
+           },
+           "AusSoutheastSQLServerName" : {
+               "value":"[concat('sqlehqsrr',variables('EnvAcronym'),'ase',parameters('Enviornmnet'))]"
+           },
+           "AusSoutheastSQLDatabaseName" : {
+               "value":"[concat('sdbehqsrr',variables('EnvAcronym'),'ase',parameters('Enviornmnet'))]"
+           },
+           "AusSoutheastServerAdminPassword": {
+               "value": "[parameters('AUSSoutheastSQLDBAdminPassword')]"
+           }
+        },
+        "VDataWarehouse":{
+           "DataWarehouseName": {
+            "value": "[concat('dwhehqsrr',variables('EnvAcronym'),'ae',parameters('Enviornmnet'))]"
+           },
+           "DWDatabaseName": {
+               "value": "[concat('wdbehqsrr',variables('EnvAcronym'),'ae',parameters('Enviornmnet'))]"
+           },
+           "DWAdminPassword": {
+              "value": "[parameters('DataWarehouseAdminPassword')]"
+           }
+        },
+        "VDataFactory": {
+            "DataFactoryName": {
+                "value": "[concat('adfehqsrr',variables('EnvAcronym'),'ae',parameters('Enviornmnet'))]"
+            },
+            "IntegrationRuntimeName" : {
+                "value": "[concat('sisehqsrr',variables('EnvAcronym'),'ae',parameters('Enviornmnet'))]"
+            },
+            "ComputeVnetID": {
+                "value": "[variables('AUSEastVnetID')]"
+            },
+            "ComputeSubnetName": {
+                "value": "[parameters('DataFactoryComputeSubnetName')]"
+            },
+            "CatalogDBServerName": {
+                "value": "[concat('cdbehqsrr',variables('EnvAcronym'),'ae',parameters('Enviornmnet'))]"
+            },
+            "DBAdminPassword": {
+                "value": "[parameters('DataFactoryCatalogDatabasePassword')]"
+            }
+        },
+        "VAnalysisServices": {
+            "AnalysisServicesName": {
+                "value": "[concat('sasehqsrr',variables('EnvAcronym'),'ae',parameters('Enviornmnet'))]"
+            },
+            "AnalysisServicesAdminUPN": {
+                "value": "[parameters('AnalysisServicesAdminUPN')]"
+            }
+        }
+    },
+    "functions": [  ],
+    "resources": [
+        {
+            "comments": "Create SRRA Storage Accounts",
+            "name": "storageaccounts",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2017-05-10",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('StorageAccountsTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": "[variables('VStorageAccounts')]"
+            }
+        },
+        {
+            "comments": "Create SRRA SQL Managed Instannces",
+            "name": "managedinstances",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('ManagedInstancesTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": "[variables('VManagedInstances')]"
+            }
+        },
+        {
+            "comments": "Create SRRA SQL Servers",
+            "name": "sqlservers",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('SQLDatabaseTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": "[variables('VSQLDatabase')]"
+            }
+        },
+        {
+            "comments": "Create SRRA Data Warehouse",
+            "name": "datawarehouse",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('DataWarehouseTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": "[variables('VDataWarehouse')]"
+            }
+        },
+        {
+            "comments": "Create SRRA Data Factory",
+            "name": "datafactory",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('DataFactoryTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": "[variables('VDataFactory')]"
+            }
+        },
+        {
+            "comments": "Create SRRA Analysis Services",
+            "name": "analysisservices",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('AnalysisServicesTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": "[variables('VAnalysisServices')]"
+            }
+        }
+      ],
+    "outputs": {  }
+}

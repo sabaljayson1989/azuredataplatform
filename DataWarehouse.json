@@ -1,0 +1,92 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": { 
+        "DataWarehouseName": {
+            "type": "string",
+            "metadata": {
+                "description": "Datawarehouse server name"
+            }
+        },
+        "DataWarehouseLocation": {
+            "type": "string",
+            "defaultValue": "australiaeast",
+            "allowedValues": [
+                "australiaeast",
+                "australiasoutheast"
+            ],
+            "metadata": {
+                "description": "DataWarehouse deployment location"
+            }
+        },
+        "Scale": {
+            "type": "string",
+            "defaultValue": "DW100",
+            "allowedValues": [
+                "DW100",
+                "DW200",
+                "DW300",
+                "DW400",
+                "DW500",
+                "DW600",
+                "DW1000"
+            ],
+            "metadata": {
+                "description": "DataWarehouse performance scale"
+            }
+        },
+        "DWDatabaseName": {
+            "type": "string",
+            "metadata": {
+                "description": "DataWarehouse database name"
+            }
+        },
+        "DWAdminLogin": {
+            "type": "string",
+            "defaultValue": "Admin_QH",
+            "metadata": {
+                "description": "DataWarehouse Admin login"
+            }
+        },
+        "DWAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "DataWarehouse Admin Password"
+            }
+        }
+     },
+    "variables": {  },
+    "functions": [  ],
+    "resources": [ 
+        {
+            "name": "[parameters('DataWarehouseName')]",
+            "type": "Microsoft.Sql/servers",
+            "kind": "v12.0",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[parameters('DataWarehouseLocation')]",
+            "scale": null,
+            "properties": {
+              "administratorLogin": "[parameters('DWAdminLogin')]",
+              "administratorLoginPassword": "[parameters('DWAdminPassword')]",
+              "version": "12.0"
+            }
+        },
+        {
+            "name": "[concat(parameters('DataWarehouseName'),'/', parameters('DWDatabaseName'))]",
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2015-05-01-Preview",
+            "location": "[parameters('DataWarehouseLocation')]",
+            "kind": "v12.0,user,datawarehouse",
+            "properties": {
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "edition": "DataWarehouse",
+                "requestedServiceObjectiveName": "[parameters('Scale')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/', parameters('DataWarehouseName'))]"
+            ]
+        }
+        
+     ],
+    "outputs": {  }
+}

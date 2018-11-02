@@ -1,0 +1,163 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": { 
+        "DataFactoryName": {
+            "type": "string",
+            "metadata" : {
+                "description": "DataFactory Name"
+            }
+        },
+        "DataFactoryLocation" : {
+            "type":"string",
+            "defaultValue": "East US",
+            "allowedValues": [
+                "East US",
+                "East US 2",
+                "West Europe"
+              ],
+              "metadata": {
+                "description": "Location of the data factory."
+              }
+        },
+        "IntegrationRuntimeName" : {
+            "type": "string",
+            "metadata": {
+                "description": "IIntegration runtime name"
+            }
+        },
+        "RuntimeComputeLocation" : {
+            "type": "string",
+            "defaultValue": "Australia East",
+            "allowedValues": [
+                "Australia East",
+                "Australia Southeast"
+            ],
+            "metadata": {
+                "description": "Compute resource location"
+            }
+        },
+        "NodeSize": {
+            "type": "string",
+            "defaultValue": "Standard_A4_v2",
+            "allowedValues": [
+              "Standard_A4_v2",
+              "Standard_A8_v2",
+              "Standard_D1_v2",
+              "Standard_D2_v2",
+              "Standard_D3_v2",
+              "Standard_D4_v2"
+            ],
+            "metadata": {
+              "description": "Compute node size"
+            } 
+        },
+        "NumberOfNodes": {
+            "type": "int",
+            "defaultValue": 1,
+            "metadata": {
+              "description": "Number of nodes in the compute cluster."
+            }
+        },
+        "ComputeVnetID": {
+            "type": "string",
+            "metadata": {
+                "description": "Vnet ID for SSIS compute"
+            } 
+
+        },
+        "ComputeSubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Subnet name for SSIS compute"
+            } 
+        },
+        "CatalogDBServerName": {
+            "type": "string",
+            "metadata": {
+                "description": "SSIS Catalog DB SQL server name"
+            }
+        },
+        "DBAdminUsername": {
+            "type": "string",
+            "defaultValue": "Admin_QH",
+            "metadata": {
+                "description": "SSIS Catalog DB Admin user name"
+            } 
+
+        },
+        "DBAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "SSIS Catalog DB Admin password"
+            } 
+        }
+     },
+    "variables": {  },
+    "functions": [  ],
+    "resources": [
+        {
+            "name": "[parameters('CatalogDBServerName')]",
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2015-05-01-preview",
+            "location": "australiaeast",
+            "identity": {
+              "type": "SystemAssigned"
+            },
+            "scale": null,
+            "properties": {
+              "administratorLogin": "[parameters('DBAdminUsername')]",
+              "administratorLoginPassword": "[parameters('DBAdminPassword')]",
+              "version": "12.0"
+            }
+        },
+        {
+            "apiVersion": "2018-06-01",
+            "name": "[parameters('DataFactoryName')]",
+            "location": "[parameters('DataFactoryLocation')]",
+            "type": "Microsoft.DataFactory/factories",
+            "properties": {},
+            "resources": [
+                {
+                    "name": "[concat(parameters('dataFactoryName'), '/', parameters('IntegrationRuntimeName'))]",
+                    "type": "Microsoft.DataFactory/factories/integrationRuntimes",
+                    "dependsOn": [
+                        "[parameters('dataFactoryName')]"
+                    ],
+                    "apiVersion": "2018-06-01",
+                    "properties": {
+                        "type": "Managed",
+                        "typeProperties": {
+                            "computeProperties": {
+                                "location": "[parameters('RuntimeComputeLocation')]",
+                                "nodeSize": "[parameters('NodeSize')]",
+                                "numberOfNodes": "[parameters('NumberOfNodes')]",
+                                "maxParallelExecutionsPerNode": 1,
+                                "vNetProperties": {
+                                    "vNetId": "[parameters('ComputeVnetID')]",
+                                    "subnet": "[parameters('ComputeSubnetName')]"
+                                }
+                            },
+                            "ssisProperties": {
+                                "catalogInfo": {
+                                  "catalogServerEndpoint": "[parameters('CatalogDBServerName')]",
+                                  "catalogAdminUserName": "[parameters('DBAdminUsername')]",
+                                  "catalogAdminPassword": {
+                                    "type": "SecureString",
+                                    "value": "[parameters('DBAdminPassword')]"
+                                  },
+                                  "catalogPricingTier": "Basic"
+                                },
+                                "edition": "Standard"
+                              }
+                        }
+                    }
+                }
+            ],
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/', parameters('CatalogDBServerName'))]"
+            ]
+        } 
+     ],
+    "outputs": {  }
+}

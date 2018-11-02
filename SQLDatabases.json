@@ -1,0 +1,124 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": { 
+        "AusEastSQLServerName" : {
+            "type": "string",
+            "metadata": {
+              "description": "SQL Server Name for Australia East DB"
+            }
+        },
+        "AusEastSQLDatabaseName" : {
+            "type": "string",
+            "metadata": {
+              "description": "SQL Database Name for Australia East"
+            }
+        },
+        "ServerAdminLogin": {
+            "type": "string",
+            "defaultValue": "Admin_QH",
+            "metadata": {
+              "description": "SQL Server Admin Login"
+            }
+        },
+        "AusEastServerAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+              "description": "SQL Server Admin Password"
+            }    
+        },
+        "AusSoutheastSQLServerName" : {
+            "type": "string",
+            "metadata": {
+              "description": "SQL Server Name for Australia East DB"
+            }
+        },
+        "AusSoutheastSQLDatabaseName" : {
+            "type": "string",
+            "metadata": {
+              "description": "SQL Database Name for Australia East"
+            }
+        },
+        "AusSoutheastServerAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+              "description": "SQL Server Admin Password"
+            }    
+        }
+     },
+    "variables": {  },
+    "functions": [  ],
+    "resources": [
+        {
+            "name": "[parameters('AusEastSQLServerName')]",
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2015-05-01-preview",
+            "location": "australiaeast",
+            "identity": {
+              "type": "SystemAssigned"
+            },
+            "scale": null,
+            "properties": {
+              "administratorLogin": "[parameters('ServerAdminLogin')]",
+              "administratorLoginPassword": "[parameters('AusEastServerAdminPassword')]",
+              "version": "12.0"
+            }
+        },
+        {
+            "name": "[concat(parameters('AusEastSQLServerName'),'/', parameters('AusEastSQLDatabaseName'))]",
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2017-03-01-preview",
+            "location": "australiaeast",
+            "kind": "v12.0,user",
+            "sku": {
+                "name": "Basic",
+                "tier": "Basic"
+            },
+            "properties": {
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "maxSizeBytes": 2147483648,
+                "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+                "zoneRedundant": false
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/', parameters('AusEastSQLServerName'))]"
+            ]
+        },
+        {
+            "name": "[parameters('AusSoutheastSQLServerName')]",
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2015-05-01-preview",
+            "location": "australiasoutheast",
+            "identity": {
+              "type": "SystemAssigned"
+            },
+            "scale": null,
+            "properties": {
+              "administratorLogin": "[parameters('ServerAdminLogin')]",
+              "administratorLoginPassword": "[parameters('AusSoutheastServerAdminPassword')]",
+              "version": "12.0"
+            }
+        },
+        {
+            "name": "[concat(parameters('AusSoutheastSQLServerName'),'/', parameters('AusSoutheastSQLDatabaseName'))]",
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2017-03-01-preview",
+            "location": "australiasoutheast",
+            "kind": "v12.0,user",
+            "sku": {
+                "name": "Basic",
+                "tier": "Basic"
+            },
+            "properties": {
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "maxSizeBytes": 2147483648,
+                "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+                "zoneRedundant": false
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/', parameters('AusSoutheastSQLServerName'))]"
+            ]
+        }
+     ],
+    "outputs": {  }
+}

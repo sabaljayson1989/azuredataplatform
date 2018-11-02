@@ -1,0 +1,123 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "AusEastMIName" : {
+            "type": "string",
+            "metadata": {
+              "description": " Managed Instance Name for Australia East"
+            }
+        },
+        "AusSoutheastMIName" : {
+            "type": "string",
+            "metadata": {
+              "description": " Managed Instance Name for Australia Southeast"
+            }
+        },
+        "AusEastMISubnetID" : {
+            "type": "string",
+            "metadata": {
+              "description": "Managed Instnace Subnet ID for Australia East"
+            }
+        },
+        "AusSoutheastMISubnetID" : {
+            "type": "string",
+            "metadata": {
+              "description": "Managed Instnace Subnet ID for Australia Southeast"
+            }
+        },
+        "ServerAdminLogin": {
+            "type": "string",
+            "defaultValue": "Admin_QH",
+            "metadata": {
+              "description": "MI Server Admin Login"
+            }
+        },
+        "AusEastServerAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+              "description": "MI Server Admin Password AE"
+            }    
+        },
+        "AusSoutheastServerAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+              "description": "MI Server Admin Password ASE"
+            }    
+        },
+        "MIvCore": {
+            "type": "int",
+            "defaultValue": 8,
+            "allowedValues":[
+                8,16,24,32,40,64,80
+            ],
+            "metadata": {
+                "description" : "Number of vCores"
+            }
+        },
+        "StorageSize": {
+            "type": "int",
+            "defaultValue": 32,
+            "allowedValues": [
+                32,64,96,128,160,192,224,256,288,320,
+                352,384,416,448,480,512
+            ]
+        },
+        "SKUName": {
+            "type": "string",
+            "defaultValue": "GP_Gen5",
+            "allowedValues": [
+                "GP_Gen5"
+            ]
+        }
+      },
+    "variables": {},
+    "functions": [  ],
+    "resources": [
+        {
+            "comments": "Austrlia East MI",
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Sql/managedInstances",
+            "name": "[parameters('AusEastMIName')]",
+            "location": "australiaeast",
+            "sku": {
+                "name": "[parameters('SKUName')]",
+                "tier": "GeneralPurpose",
+                "family": "Gen5",
+                "capacity": 8
+            },
+            "scale": null,
+            "properties": {
+                "administratorLogin": "[parameters('ServerAdminLogin')]",
+                "administratorLoginPassword": "[parameters('AusEastServerAdminPassword')]",
+                "subnetId": "[parameters('AusEastMISubnetID')]",
+                "licenseType": "LicenseIncluded",
+                "vCores": "[parameters('MIvCore')]",
+                "storageSizeInGB": "[parameters('StorageSize')]"
+            }
+        },
+        {
+            "comments": "Australia Southeast MI",
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Sql/managedInstances",
+            "name": "[parameters('AusSoutheastMIName')]",
+            "location": "australiasoutheast",
+            "sku": {
+                "name": "[parameters('SKUName')]",
+                "tier": "GeneralPurpose",
+                "family": "Gen5",
+                "capacity": 8
+            },
+            "scale": null,
+            "properties": {
+                "administratorLogin": "[parameters('ServerAdminLogin')]",
+                "administratorLoginPassword": "[parameters('AusSoutheastServerAdminPassword')]",
+                "subnetId": "[parameters('AusSoutheastMISubnetID')]",
+                "licenseType": "LicenseIncluded",
+                "vCores": "[parameters('MIvCore')]",
+                "storageSizeInGB": "[parameters('StorageSize')]"
+            }
+        }  
+     ],
+    "outputs": {  }
+}

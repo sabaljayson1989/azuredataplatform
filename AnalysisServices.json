@@ -1,0 +1,56 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": { 
+        "AnalysisServicesName": {
+            "type": "string",
+            "metadata": {
+                "description": "Analysis Services Name"
+            }
+        },
+        "AnalysisServicesLocation": {
+            "type": "string",
+            "defaultValue": "Australia East",
+            "allowedValues": [
+                "Australia East",
+                "Australia Southeast"
+            ],
+            "metadata": {
+                "description": "Analysis Services Location"
+            }
+        },
+        "AnalysisServicesAdminUPN": {
+            "type": "string",
+            "metadata": {
+                "description": "UPN of Analysis Services Admin(<>@health.qld.gov.au) "
+            }
+
+        }
+     },
+    "variables": {  },
+    "functions": [  ],
+    "resources": [ 
+        {
+            "name" : "[parameters('AnalysisServicesName')]",
+            "type": "Microsoft.AnalysisServices/servers",
+            "apiVersion": "2017-08-01",
+            "location": "[parameters('AnalysisServicesLocation')]",
+            "sku": {
+                "name": "B1",
+                "tier": "Basic",
+                "capacity": 1
+            },
+            "properties": {
+                "asAdministrators": {
+                    "members": [
+                        "[parameters('AnalysisServicesAdminUPN')]"
+                    ]
+                },
+                "managedMode": 1,
+                "querypoolConnectionMode": "All",
+                "serverMonitorMode": 1
+            }
+        }
+     ],
+    "outputs": { }
+}
